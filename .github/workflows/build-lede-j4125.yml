@@ -78,6 +78,11 @@ jobs:
           make download -j8
           find dl -size -1024c -exec ls -l {} \;
 
+      - name: Preflight compile Transmission
+        run: |
+          make package/feeds/packages/transmission/clean
+          make package/feeds/packages/transmission/compile V=s
+
       - name: Compile firmware
         run: |
           make -j$(nproc) || make -j1 V=s
