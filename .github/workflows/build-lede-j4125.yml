@@ -73,6 +73,14 @@ jobs:
                        tr_ninf (getKey (), _("Found Internet Gateway Device \"%s\""), handle->urls.controlURL);
           PATCH
 
+      - name: Cache package downloads
+        uses: actions/cache@v4
+        with:
+          path: dl
+          key: lede-dl-${{ hashFiles('feeds.conf.default', 'configs/j4125.config') }}
+          restore-keys: |
+            lede-dl-
+
       - name: Download package sources
         run: |
           make download -j8
