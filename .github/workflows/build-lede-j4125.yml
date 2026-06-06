@@ -78,6 +78,11 @@ jobs:
           make download -j8
           find dl -size -1024c -exec ls -l {} \;
 
+      - name: Build tools and toolchain
+        run: |
+          make tools/install -j$(nproc)
+          make toolchain/install -j$(nproc)
+
       - name: Preflight compile Transmission
         run: |
           make package/feeds/packages/transmission/clean
@@ -91,7 +96,7 @@ jobs:
         if: always()
         run: |
           mkdir -p artifact
-          if [ -d bin/targets/x86/64 ]; then
+          if compgen -G "bin/targets/x86/64/*" > /dev/null; then
             cp -a bin/targets/x86/64/* artifact/
           fi
 
@@ -100,5 +105,5 @@ jobs:
         with:
           name: lede-j4125-x86-64
           path: artifact/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
