@@ -91,11 +91,6 @@ jobs:
           make tools/install -j$(nproc)
           make toolchain/install -j$(nproc)
 
-      - name: Preflight compile Transmission
-        run: |
-          make package/feeds/packages/transmission/clean
-          make package/feeds/packages/transmission/compile V=s
-
       - name: Compile firmware
         run: |
           make -j$(nproc) || make -j1 V=s
