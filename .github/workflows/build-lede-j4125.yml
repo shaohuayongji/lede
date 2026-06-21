@@ -40,9 +40,16 @@ jobs:
             python3-docutils qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo \
             uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
 
-      - name: Update and install feeds
+      - name: Update feeds
         run: |
           ./scripts/feeds update -a
+
+      - name: Add custom LuCI packages
+        run: |
+          ./scripts/prepare-custom-luci-apps.sh
+
+      - name: Install feeds
+        run: |
           ./scripts/feeds install -a
 
       - name: Apply J4125 config

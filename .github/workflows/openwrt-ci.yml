@@ -60,6 +60,7 @@ jobs:
         run: |
           sed -i 's/#src-git helloworld/src-git helloworld/g' ./feeds.conf.default
           ./scripts/feeds update -a
+          ./scripts/prepare-custom-luci-apps.sh
           ./scripts/feeds install -a
 
       - name: Generate configuration file
