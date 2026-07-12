@@ -56,6 +56,13 @@ jobs:
         run: |
           cp configs/j4125.config .config
           make defconfig
+          grep -qx 'CONFIG_PACKAGE_rtp2httpd=y' .config
+          grep -qx 'CONFIG_PACKAGE_luci-app-rtp2httpd=y' .config
+          grep -qx 'CONFIG_PACKAGE_luci-i18n-rtp2httpd-zh-cn=y' .config
+          if grep -qx 'CONFIG_PACKAGE_udpxy=y' .config; then
+            echo 'udpxy must remain disabled; rtp2httpd is its replacement.' >&2
+            exit 1
+          fi
 
       - name: Patch Transmission miniupnpc compatibility
         run: |
