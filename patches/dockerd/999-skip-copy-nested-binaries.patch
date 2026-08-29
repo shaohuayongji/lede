@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Andy Chiang <AndyChiang_git@outlook.com>
+Date: Sun, 16 Aug 2026 22:50:48 +0700
+Subject: [PATCH] skip copy nested binaries
+
+OpenWrt packages containerd, runc, tini, and the other Docker runtime
+components separately. Copying executables from the build host into the
+dockerd bundle is unnecessary and fails on GitHub runners when one of the
+expected host executables is absent.
+
+---
+ hack/make/binary-daemon | 1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/hack/make/binary-daemon
++++ b/hack/make/binary-daemon
+@@ -2,6 +2,7 @@
+ set -e
+ 
+ copy_binaries() {
++	return
+	local dir="${1:?}"
+
+	# Add nested executables to bundle dir so we have complete set of

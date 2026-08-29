@@ -62,6 +62,16 @@ jobs:
         run: |
           ./scripts/feeds install -a
 
+      - name: Patch dockerd GitHub runner compatibility
+        run: |
+          DOCKERD_PATCH_DIR="package/feeds/packages/dockerd/patches"
+          mkdir -p "${DOCKERD_PATCH_DIR}"
+          if grep -RqsE 'skip copy nested binaries|Skipping .*not found in PATH' "${DOCKERD_PATCH_DIR}"; then
+            echo 'The dockerd feed already contains the nested-binary copy fix.'
+          else
+            cp patches/dockerd/999-skip-copy-nested-binaries.patch "${DOCKERD_PATCH_DIR}/"
+          fi
+
       - name: Apply J4125 config
         run: |
           cp configs/j4125.config .config
