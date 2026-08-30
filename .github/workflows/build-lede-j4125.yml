@@ -82,11 +82,15 @@ jobs:
           grep -qx 'CONFIG_PACKAGE_luci-app-ddns=y' .config
           grep -qx 'CONFIG_PACKAGE_luci-i18n-ddns-zh-cn=y' .config
           grep -qx 'CONFIG_PACKAGE_luci-app-package-manager=y' .config
-          grep -qx 'CONFIG_PACKAGE_alist=y' .config
+          grep -qx 'CONFIG_PACKAGE_openlist2=y' .config
+          grep -qx 'CONFIG_PACKAGE_luci-app-openlist2=y' .config
+          grep -qx 'CONFIG_PACKAGE_luci-i18n-openlist2-zh-cn=y' .config
           grep -qx 'CONFIG_PACKAGE_tailscale=y' .config
+          grep -qx 'CONFIG_PACKAGE_luci-app-tailscale-community=y' .config
+          grep -qx 'CONFIG_PACKAGE_luci-i18n-tailscale-community-zh-cn=y' .config
           for package_name in \
             udpxy luci-app-udpxy frpc frps \
-            luci-app-accesscontrol luci-app-alist luci-app-tailscale \
+            alist luci-app-accesscontrol luci-app-alist luci-app-tailscale \
             luci-app-opkg luci-app-ssr-plus \
             shadowsocks-libev-config shadowsocks-libev-ss-local \
             shadowsocks-libev-ss-redir shadowsocks-libev-ss-server \
