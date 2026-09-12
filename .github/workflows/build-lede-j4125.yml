@@ -81,6 +81,8 @@ jobs:
           grep -qx 'CONFIG_PACKAGE_luci-i18n-rtp2httpd-zh-cn=y' .config
           grep -qx 'CONFIG_PACKAGE_luci-app-ddns=y' .config
           grep -qx 'CONFIG_PACKAGE_luci-i18n-ddns-zh-cn=y' .config
+          grep -qx 'CONFIG_PACKAGE_luci-app-filetransfer=y' .config
+          grep -qx 'CONFIG_PACKAGE_luci-i18n-filetransfer-zh-cn=y' .config
           grep -qx 'CONFIG_PACKAGE_luci-app-package-manager=y' .config
           grep -qx 'CONFIG_PACKAGE_openlist2=y' .config
           grep -qx 'CONFIG_PACKAGE_luci-app-openlist2=y' .config
