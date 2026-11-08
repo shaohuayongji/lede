@@ -814,6 +814,7 @@ $(eval $(call KernelPackage,sched-act-vlan))
 define KernelPackage/sched-bpf
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=Traffic shaper support for Berkeley Packet Filter
+  DEPENDS:=@!TARGET_qualcommax
   KCONFIG:= \
 	CONFIG_NET_CLS_BPF \
 	CONFIG_NET_ACT_BPF
@@ -929,7 +930,7 @@ $(eval $(call KernelPackage,sched-ipset))
 define KernelPackage/sched-mqprio-common
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=mqprio queue common dependencies support
-  DEPENDS:=@(LINUX_6_6||LINUX_6_12||LINUX_6_18)
+  DEPENDS:=@(LINUX_6_6||LINUX_6_12||LINUX_6_18||LINUX_7_3)
   HIDDEN:=1
   KCONFIG:=CONFIG_NET_SCH_MQPRIO_LIB
   FILES:=$(LINUX_DIR)/net/sched/sch_mqprio_lib.ko
@@ -945,7 +946,7 @@ $(eval $(call KernelPackage,sched-mqprio-common))
 define KernelPackage/sched-mqprio
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=Multi-queue priority scheduler (MQPRIO)
-  DEPENDS:=+kmod-sched-core +(LINUX_6_6||LINUX_6_12||LINUX_6_18):kmod-sched-mqprio-common
+  DEPENDS:=+kmod-sched-core +(LINUX_6_6||LINUX_6_12||LINUX_6_18||LINUX_7_3):kmod-sched-mqprio-common
   KCONFIG:=CONFIG_NET_SCH_MQPRIO
   FILES:=$(LINUX_DIR)/net/sched/sch_mqprio.ko
   AUTOLOAD:=$(call AutoProbe, sch_mqprio)
@@ -1516,7 +1517,7 @@ $(eval $(call KernelPackage,inet-mptcp-diag))
 define KernelPackage/xdp-sockets-diag
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=PF_XDP sockets monitoring interface support for ss utility
-  DEPENDS:=@KERNEL_XDP_SOCKETS
+  DEPENDS:=@KERNEL_XDP_SOCKETS +kmod-inet-diag
   KCONFIG:=CONFIG_XDP_SOCKETS_DIAG
   FILES:=$(LINUX_DIR)/net/xdp/xsk_diag.ko
   AUTOLOAD:=$(call AutoLoad,31,xsk_diag)
@@ -1607,7 +1608,7 @@ $(eval $(call KernelPackage,qrtr-tun))
 define KernelPackage/qrtr-smd
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=SMD IPC Router channels
-  DEPENDS:=+kmod-qrtr @TARGET_qualcommax
+  DEPENDS:=+kmod-qrtr @(TARGET_qualcommax||TARGET_qualcommbe)
   KCONFIG:=CONFIG_QRTR_SMD
   FILES:= $(LINUX_DIR)/net/qrtr/qrtr-smd.ko
   AUTOLOAD:=$(call AutoProbe,qrtr-smd)

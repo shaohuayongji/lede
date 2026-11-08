@@ -363,6 +363,20 @@ define Build/jffs2
 	@mv $@.new $@
 endef
 
+define Build/yaffs-filesystem
+	let \
+		kernel_size="$$(stat -c%s $@)" \
+		kernel_chunks="(kernel_size / 1024) + 1" \
+		filesystem_chunks="kernel_chunks + 3" \
+		filesystem_blocks="(filesystem_chunks / 63) + 1" \
+		filesystem_size="filesystem_blocks * 64 * 1024" \
+		filesystem_size_with_reserve="(filesystem_blocks + 2) * 64 * 1024"; \
+		head -c $$filesystem_size_with_reserve /dev/zero | tr "\000" "\377" > $@.img \
+		&& yafut -d $@.img -w -i $@ -o $(if $(findstring v7,$@),bootimage,kernel) -C 1040 -B 64k -E -P -S $(1) \
+		&& truncate -s $$filesystem_size $@.img \
+		&& mv $@.img $@
+endef
+
 define Build/kernel2minor
 	$(eval temp_file := $(shell mktemp))
 	cp $@ $(temp_file)
@@ -593,6 +607,23 @@ define Build/uImage
 		$(if $(UIMAGE_MAGIC),-M $(UIMAGE_MAGIC)) \
 		$(wordlist 2,$(words $(1)),$(1)) \
 		-d $@ $@.new
+	mv $@.new $@
+endef
+
+define Build/multiImage
+	$(if $(UIMAGE_TIME),SOURCE_DATE_EPOCH="$(UIMAGE_TIME)") \
+	mkimage \
+		-A $(LINUX_KARCH) \
+		-O linux \
+		-T multi \
+		-C $(word 1,$(1)) \
+		-a $(KERNEL_LOADADDR) \
+		-e $(if $(KERNEL_ENTRY),$(KERNEL_ENTRY),$(KERNEL_LOADADDR)) \
+		-n '$(if $(UIMAGE_NAME),$(UIMAGE_NAME),$(call toupper,$(LINUX_KARCH)) $(VERSION_DIST) Linux-$(LINUX_VERSION))' \
+		$(if $(UIMAGE_MAGIC),-M $(UIMAGE_MAGIC)) \
+		-d $@:$(word 2,$(1)):$(word 3,$(1)) \
+		$(wordlist 4,$(words $(1)),$(1)) \
+		$@.new
 	mv $@.new $@
 endef
 

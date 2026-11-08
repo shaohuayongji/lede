@@ -140,6 +140,34 @@ sub package_depends($$) {
 	return $ret;
 }
 
+sub condition_implies_dep {
+	my ($condition, $depend) = @_;
+	return 0 unless defined $condition;
+	return 1 if $condition eq $depend || $condition eq "($depend)";
+
+	my ($depth, $start) = (0, 0);
+	my @terms;
+	for (my $i = 0; $i < length($condition); $i++) {
+		my $char = substr($condition, $i, 1);
+		$depth++ if $char eq '(';
+		$depth-- if $char eq ')';
+		next if $depth;
+		my $op = substr($condition, $i, 2);
+		# A dependency in only one alternative is not implied.
+		return 0 if $op eq '||';
+		if ($op eq '&&') {
+			push @terms, substr($condition, $start, $i - $start);
+			$start = ++$i + 1;
+		}
+	}
+	push @terms, substr($condition, $start);
+	for my $term (@terms) {
+		$term =~ s/^\s+|\s+$//g;
+		return 1 if $term eq $depend || $term eq "($depend)";
+	}
+	return 0;
+}
+
 sub mconf_depends {
 	my $pkgname = shift;
 	my $depends = shift;
@@ -160,7 +188,10 @@ sub mconf_depends {
 		$depend =~ s/^([@\+]+)// and $flags = $1;
 		my $condition = $parent_condition;
 
-		next if $condition eq $depend;
+		$depend = $2 if	$depend =~ /^(.+):(.+)$/ and $dep->{$1} eq 'select';
+
+		# Do not turn a redundant conditional dependency into a Kconfig edge.
+		next if condition_implies_dep($condition, $depend);
 		next if $seen->{"$parent_condition:$depend"};
 		next if $seen->{":$depend"};
 		$seen->{"$parent_condition:$depend"} = 1;
@@ -232,7 +263,7 @@ sub mconf_depends {
 		mconf_depends($pkgname, $tdep->[0], 1, $dep, $seen, $tdep->[1]);
 	}
 
-	foreach my $depend (keys %$dep) {
+	foreach my $depend (sort keys %$dep) {
 		my $m = $dep->{$depend};
 		$res .= "\t\t$m $depend\n";
 	}
@@ -246,6 +277,10 @@ sub mconf_conflicts {
 
 	foreach my $depend (@$depends) {
 		next unless $package{$depend};
+		my $reverse = $package{$depend}->{conflicts};
+		# One Kconfig edge is enough for a reciprocal package conflict.
+		next if $reverse && $pkgname gt $depend &&
+			grep { $_ eq $pkgname } @$reverse;
 		$res .= "\t\tdepends on m || (PACKAGE_$depend != y)\n";
 	}
 	return $res;

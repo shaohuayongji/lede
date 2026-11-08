@@ -5,28 +5,57 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=firewall4
-PKG_RELEASE:=$(AUTORELEASE)
+
+SR1010_OFFLOAD_FIXES:=$(if $(and $(filter y,$(CONFIG_TARGET_zte_zx279133)),\
+	$(filter y,$(CONFIG_TARGET_zte_zx279133_DEVICE_zte_zxslc-sr1010))),y)
+PKG_CONFIG_DEPENDS += CONFIG_TARGET_zte_zx279133 \
+	CONFIG_TARGET_zte_zx279133_DEVICE_zte_zxslc-sr1010
+PKG_PREPARED_DEPENDS += $(PKG_CONFIG_DEPENDS)
+PKG_RELEASE:=$(if $(SR1010_OFFLOAD_FIXES),8,7)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/firewall4.git
-PKG_SOURCE_DATE:=2022-11-29
-PKG_SOURCE_VERSION:=700a925fd9c1f1ff404e6b125cd5347ad7c45668
-PKG_MIRROR_HASH:=18fb7a27399bf2e9e094a4cbacd4e859448c1c9194b6da4a78c9f37a642d1703
+PKG_SOURCE_DATE:=2024-12-18
+PKG_SOURCE_VERSION:=18fc0ead19faf06b8ce7ec5be84957278e942dfa
+PKG_MIRROR_HASH:=790c846317645e2325ca41c9e1d8bec6f1a4af2959cd33ac710de30b2b86f8cd
 PKG_MAINTAINER:=Jo-Philipp Wich <jo@mein.io>
 PKG_LICENSE:=ISC
 
 include $(INCLUDE_DIR)/package.mk
+
+# Quilt's generic PatchDir fallback treats every top-level entry as a patch.
+# Stage only generic *.patch files so SR1010 subdirectories are not included.
+ifneq ($(strip $(QUILT)),)
+define Build/Patch
+	@rm -rf $(PKG_BUILD_DIR)/patches $(PKG_BUILD_DIR)/.patch-source
+	@mkdir -p $(PKG_BUILD_DIR)/.patch-source
+	@for patch in $(CURDIR)/patches/*.patch; do \
+		[ -f "$$$$patch" ] || continue; \
+		cp "$$$$patch" $(PKG_BUILD_DIR)/.patch-source/; \
+	done
+	$(call PatchDir,$(PKG_BUILD_DIR),$(PKG_BUILD_DIR)/.patch-source,)
+	@rm -rf $(PKG_BUILD_DIR)/.patch-source
+	@touch $(PKG_BUILD_DIR)/.quilt_used
+endef
+endif
+
+ifneq ($(SR1010_OFFLOAD_FIXES),)
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	$(call PatchDir,$(PKG_BUILD_DIR),$(CURDIR)/patches/sr1010,sr1010/)
+endef
+endif
 
 define Package/firewall4
   SECTION:=net
   CATEGORY:=Base system
   TITLE:=OpenWrt 4th gen firewall
   DEPENDS:= \
-	+kmod-nft-core +kmod-nft-fib +kmod-nft-offload \
-	+kmod-nft-nat \
+	+kmod-nft-core +kmod-nft-fib +kmod-tcp-bbr +kmod-nft-offload \
+	+kmod-nft-nat +kmod-nft-nat6 +kmod-nft-fullcone \
 	+nftables-json \
 	+ucode +ucode-mod-fs +ucode-mod-ubus +ucode-mod-uci
-  EXTRA_DEPENDS:=ucode (>= 2022-03-22)
+  EXTRA_DEPENDS:=ucode (>=2022.03.22)
   PROVIDES:=uci-firewall
 endef
 

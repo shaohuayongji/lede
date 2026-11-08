@@ -2,28 +2,11 @@
 
 OTHER_MENU:=Other modules
 
-I2C_MT7621_MODULES:= \
-  CONFIG_I2C_MT7621:drivers/i2c/busses/i2c-mt7621
 
-define KernelPackage/i2c-an7581
+define KernelPackage/pwm-airoha
   SUBMENU:=$(OTHER_MENU)
-  $(call i2c_defaults,$(I2C_MT7621_MODULES),79)
-  TITLE:=Airoha I2C Controller
-  DEPENDS:=+kmod-i2c-core \
-	  @(TARGET_airoha_an7581)
-endef
-
-define KernelPackage/i2c-an7581/description
- Kernel modules for enable mt7621 i2c controller.
-endef
-
-$(eval $(call KernelPackage,i2c-an7581))
-
-
-define KernelPackage/pwm-an7581
-  SUBMENU:=$(OTHER_MENU)
-  TITLE:=Airoha EN7581 PWM
-  DEPENDS:=@(TARGET_airoha_an7581)
+  TITLE:=Airoha AN7581 and AN7583 PWM
+  DEPENDS:=@TARGET_airoha_an7581||TARGET_airoha_an7583
   KCONFIG:= \
         CONFIG_PWM=y \
         CONFIG_PWM_AIROHA=y \
@@ -33,10 +16,28 @@ define KernelPackage/pwm-an7581
   AUTOLOAD:=$(call AutoProbe,pwm-airoha)
 endef
 
-define KernelPackage/pwm-an7581/description
+define KernelPackage/pwm-airoha/description
  Kernel module to use the PWM channel on Airoha SoC
 endef
 
-$(eval $(call KernelPackage,pwm-an7581))
+$(eval $(call KernelPackage,pwm-airoha))
 
+define KernelPackage/crypto-hw-airoha-eip93
+  SUBMENU:=Cryptographic API modules
+  TITLE:=Airoha EIP93 crypto accelerator
+  CONFLICTS:=kmod-crypto-hw-eip93
+  DEPENDS:=@TARGET_airoha_an7581||TARGET_airoha_an7583 +kmod-crypto-authenc +kmod-crypto-des +kmod-crypto-md5 +kmod-crypto-hmac +kmod-crypto-sha1 +kmod-crypto-sha256 +kmod-crypto-cbc +kmod-crypto-ctr +kmod-crypto-gcm +kmod-crypto-user
+  KCONFIG:=CONFIG_CRYPTO_HW=y CONFIG_CRYPTO_DEV_EIP93
+  FILES:= \
+    $(LINUX_DIR)/drivers/crypto/airoha-eip93/crypto-hw-eip93.ko@lt6.18 \
+    $(LINUX_DIR)/drivers/crypto/inside-secure/eip93/crypto-hw-eip93.ko@ge6.18
+  AUTOLOAD:=$(call AutoProbe,crypto-hw-eip93)
+endef
+
+define KernelPackage/crypto-hw-airoha-eip93/description
+ Hardware AES ECB/CBC/CTR, DES/3DES and hash acceleration for
+ Airoha AN7581/AN7583. EIP93 does not require an external firmware blob.
+ AES-GCM uses kernel CTR/GHASH composition. Native authenc is withheld.
+endef
+$(eval $(call KernelPackage,crypto-hw-airoha-eip93))
 

@@ -10,7 +10,8 @@ CPU_TYPE:=cortex-a15
 CPU_SUBTYPE:=neon-vfpv4
 SUBTARGETS:=generic
 
-KERNEL_PATCHVER:=5.10
+KERNEL_PATCHVER:=6.18
+KERNEL_TESTING_PATCHVER:=5.10
 
 KERNELNAME:=zImage Image dtbs
 
@@ -21,6 +22,6 @@ DEFAULT_PACKAGES += \
 	kmod-usb-ohci kmod-usb2 kmod-usb-ledtrig-usbport \
 	kmod-phy-qcom-ipq806x-usb kmod-usb3 kmod-usb-dwc3-qcom \
 	kmod-ath10k-ct wpad-openssl uboot-envtools \
-	autocore-arm automount autosamba htop
+	autocore-arm automount htop
 
 $(eval $(call BuildTarget))
